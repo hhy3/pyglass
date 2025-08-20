@@ -5,6 +5,7 @@
 #include <thread>
 
 #include "glass/graph.hpp"
+#include "glass/graph_statistic.hpp"
 #include "glass/neighbor.hpp"
 #include "glass/quant/quant.hpp"
 #include "glass/searcher/refiner.hpp"
@@ -41,7 +42,9 @@ struct GraphSearcher : public SearcherBase {
     mutable std::vector<LinearPool<typename Quant::ComputerType::dist_type, Bitset<>>> pools;
 
     GraphSearcher(Graph<int32_t> g)
-        : graph(std::move(g)), graph_po(graph.K / 16), pools(std::thread::hardware_concurrency()) {}
+        : graph(std::move(g)), graph_po(graph.K / 16), pools(std::thread::hardware_concurrency()) {
+        print_degree_statistic(graph);
+    }
 
     GraphSearcher(const GraphSearcher &) = delete;
     GraphSearcher(GraphSearcher &&) = delete;
