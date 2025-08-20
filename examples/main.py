@@ -218,27 +218,27 @@ def run_benchmark(
     runs: int = 3,
 ) -> Dict[str, float]:
     """Run benchmark for specific parameters."""
-    max_qps = 0.0
     recall = 0.0
-
+    elapsed = 0.0
     for run in range(runs):
         start_time = time()
         results, distances = glass_index.search(queries, topk, ef, concurrency)
-        elapsed = time() - start_time
-
+        elapsed += time() - start_time
         if run == 0:
             recall = calculate_recall(results, ground_truth)
 
-        qps = len(queries) / elapsed
-        max_qps = max(max_qps, qps)
+    qps = runs * len(queries) / elapsed
 
     stats = glass_index.get_stats()
 
+    bandwidth = runs * stats["mem_read_bytes"] / 1024 / 1024 / 1024 / elapsed
+
     return {
         "recall": recall,
-        "max_qps": max_qps,
+        "qps": qps,
         "p99_latency_ms": stats["p99_latency_ms"],
         "avg_dist_comps": stats["avg_dist_comps"],
+        "mem_bandwidth": bandwidth,
     }
 
 
@@ -250,10 +250,10 @@ def print_benchmark_header(
         f"\ndataset: {dataset_name}, index: {index_type}, quantizer: {search_quant}, top{topk}"
     )
     print(
-        f"{'ef':>4} | {'concurrency':>12} | {'Recall (%)':>12} | {'Max QPS':>12} | "
-        f"{'P99 Latency (ms)':>20} | {'Avg Dist Comps':>18}"
+        f"{'ef':>4} | {'concurrency':>12} | {'Recall (%)':>12} | {'QPS':>12} | "
+        f"{'P99 Lat (ms)':>12} | {'Avg Dist Comps':>18} | {'Bandwidth (GB/s)':>18}"
     )
-    print("-" * 90)
+    print("-" * 110)
 
 
 def print_benchmark_results(
@@ -262,8 +262,8 @@ def print_benchmark_results(
     """Print benchmark results."""
     print(
         f"{ef:4d} | {concurrency:12d} | {results['recall'] * 100.0:12.2f} | "
-        f"{results['max_qps']:12.2f} | {results['p99_latency_ms']:20.3f} | "
-        f"{results['avg_dist_comps']:18.2f}"
+        f"{results['qps']:12.2f} | {results['p99_latency_ms']:12.3f} | "
+        f"{results['avg_dist_comps']:18.2f} | {results['mem_bandwidth']:18.2f}"
     )
 
 
@@ -345,7 +345,7 @@ def main() -> None:
                                 runs,
                             )
                             print_benchmark_results(ef, concurrency, results)
-                        print("-" * 90)
+                        print("-" * 110)
 
 
 if __name__ == "__main__":

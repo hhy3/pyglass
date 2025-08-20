@@ -181,6 +181,7 @@ struct Searcher {
     py::dict d;
     d["p99_latency_ms"] = stats.p99_latency_ms;
     d["avg_dist_comps"] = stats.avg_dist_comps;
+    d["mem_read_bytes"] = stats.mem_read_bytes;
     return d;
   }
 };
