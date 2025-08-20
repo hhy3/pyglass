@@ -43,7 +43,7 @@ struct GraphSearcher : public SearcherBase {
 
     GraphSearcher(Graph<int32_t> g)
         : graph(std::move(g)), graph_po(graph.K / 16), pools(std::thread::hardware_concurrency()) {
-        print_degree_statistic(graph);
+        print_graph_statistic(graph);
     }
 
     GraphSearcher(const GraphSearcher &) = delete;
