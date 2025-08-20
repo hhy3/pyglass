@@ -49,6 +49,7 @@ struct ComputerImpl : Computer<Storage> {
     X *q = nullptr;
     std::tuple<Args...> args;
     mutable int64_t dist_cmps_{};
+    mutable int64_t mem_read_bytes_{};
 
     ComputerImpl(const Storage &tensor, const S *query, const auto &encoder, Args &&...args)
         : Computer<Storage>(tensor), args(std::forward<Args>(args)...) {
@@ -65,12 +66,15 @@ struct ComputerImpl : Computer<Storage> {
 
     GLASS_INLINE dist_type operator()(const Y *p) const {
         dist_cmps_++;
+        mem_read_bytes_ += this->tensor.code_size();
         return std::apply([&](auto &&...args) { return dist_func(q, p, this->tensor.dim_align(), args...); }, args);
     }
 
     GLASS_INLINE dist_type operator()(int32_t u) const { return operator()((const Y *)this->tensor.get(u)); }
 
     GLASS_INLINE size_t dist_cmps() const { return dist_cmps_; }
+
+    GLASS_INLINE size_t mem_read_bytes() const { return mem_read_bytes_; }
 };
 
 template <StorageConcept Storage, auto dist_func, typename U, typename T, typename... Args>
