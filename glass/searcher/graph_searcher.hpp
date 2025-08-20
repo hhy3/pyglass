@@ -148,6 +148,7 @@ struct GraphSearcher : public SearcherBase {
             latencies.resize(nq);
         }
         std::atomic<int64_t> total_dist_cmps{0};
+        std::atomic<int64_t> total_mem_read_bytes{0};
 #pragma omp parallel for schedule(dynamic)
         for (int32_t i = 0; i < nq; ++i) {
             std::chrono::high_resolution_clock::time_point start;
@@ -167,12 +168,14 @@ struct GraphSearcher : public SearcherBase {
                 auto end = std::chrono::high_resolution_clock::now();
                 latencies[i] = std::chrono::duration<float, std::milli>(end - start).count();
                 total_dist_cmps.fetch_add(computer.dist_cmps());
+                total_mem_read_bytes.fetch_add(computer.mem_read_bytes());
             }
         }
         if (stats_enabled) {
             std::sort(latencies.begin(), latencies.end());
             stats.p99_latency_ms = latencies.empty() ? 0.0f : latencies[static_cast<size_t>(0.99 * nq)];
             stats.avg_dist_comps = (double)total_dist_cmps.load() / nq;
+            stats.mem_read_bytes = total_mem_read_bytes.load();
         }
     }
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 
 namespace glass {
@@ -7,6 +8,7 @@ namespace glass {
 struct SearchStats {
     float p99_latency_ms = 0.0f;
     double avg_dist_comps = 0.0;
+    size_t mem_read_bytes = 0;
 };
 
 struct SearcherBase {
