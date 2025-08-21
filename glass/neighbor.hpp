@@ -78,7 +78,7 @@ struct Bitset {
     bool get(int i) const { return (data[i / block_size] >> (i & (block_size - 1))) & 1; }
 };
 
-template <typename Block = uint32_t>
+template <typename Block = uint64_t>
 struct TwoLevelBitset {
     constexpr static int block_size = sizeof(Block) * 8;
     int32_t nb = 0;
