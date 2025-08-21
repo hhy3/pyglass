@@ -219,26 +219,27 @@ def run_benchmark(
 ) -> Dict[str, float]:
     """Run benchmark for specific parameters."""
     recall = 0.0
-    elapsed = 0.0
+    max_qps = 0.0
+    max_bandwidth = 0.0
     for run in range(runs):
         start_time = time()
         results, distances = glass_index.search(queries, topk, ef, concurrency)
-        elapsed += time() - start_time
+        elapsed = time() - start_time
+        qps = len(queries) / elapsed
+        max_qps = max(max_qps, qps)
+        stats = glass_index.get_stats()
+        bandwidth = stats["mem_read_bytes"] / 1024 / 1024 / 1024 / elapsed
+        max_bandwidth = max(max_bandwidth, bandwidth)
+
         if run == 0:
             recall = calculate_recall(results, ground_truth)
 
-    qps = runs * len(queries) / elapsed
-
-    stats = glass_index.get_stats()
-
-    bandwidth = runs * stats["mem_read_bytes"] / 1024 / 1024 / 1024 / elapsed
-
     return {
         "recall": recall,
-        "qps": qps,
+        "qps": max_qps,
         "p99_latency_ms": stats["p99_latency_ms"],
         "avg_dist_comps": stats["avg_dist_comps"],
-        "mem_bandwidth": bandwidth,
+        "mem_bandwidth": max_bandwidth,
     }
 
 
