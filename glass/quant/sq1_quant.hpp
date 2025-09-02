@@ -41,7 +41,7 @@ struct SQ1Quantizer : Template {
     }
 
     static int32_t distf(const uint8_t *x, const uint8_t *y, int32_t d) {
-#if defined(__AVX512F__)
+#if defined(__AVX512F__) && defined(__AVX512VPOPCNTDQ__)
         __m512i sum = _mm512_setzero_si512();
         for (int i = 0; i < d; i += 512) {
             auto xx = _mm512_loadu_si512(x + i / 8);
