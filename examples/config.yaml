@@ -8,10 +8,6 @@ index_params:
       L: 200
       build_quant: SQ8U
 
-  - index_type: IVF
-    index_args:
-      nlist: 1024
-
 rebuild: false
 
 search_quants:
